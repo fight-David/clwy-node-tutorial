@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { Chapter,Course } = require('../../models');
+const { Chapter, Course } = require('../../models');
 const { Op } = require('sequelize');
 const {
     success,
     failure
 } = require('../../utils/responses');
-const {NotFoundError} = require('../../utils/errors');
+const { NotFoundError } = require('../../utils/errors');
 
 /**
  * 查询章节列表
@@ -79,7 +79,9 @@ router.post('/', async function (req, res) {
     try {
         const body = filterBody(req);
 
+        // 创建章节，并增加课程章节数
         const chapter = await Chapter.create(body);
+        await Course.increment('chaptersCount', { where: { id: chapter.courseId } });
         success(res, '创建章节成功。', { chapter }, 201);
     } catch (error) {
         failure(res, error);
@@ -110,7 +112,9 @@ router.delete('/:id', async function (req, res) {
     try {
         const chapter = await getChapter(req);
 
+        // 删除章节，并减少课程章节数
         await chapter.destroy();
+        await Course.decrement('chaptersCount', { where: { id: chapter.courseId } });
         success(res, '删除章节成功。');
     } catch (error) {
         failure(res, error);

@@ -2,10 +2,11 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const adminAuth = require('./middlewares/admin-auth');
-const userAuth = require('./middlewares/user-auth');
 require('dotenv').config();
 const cors = require('cors')
+
+const adminAuth = require('./middlewares/admin-auth');
+const userAuth = require('./middlewares/user-auth');
 
 // 前台接口配置
 const adminArticlesRouter = require('./routes/admin/articles');

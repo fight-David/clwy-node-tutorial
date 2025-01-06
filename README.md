@@ -11,6 +11,7 @@
 将`.env.example`文件拷贝为`.env`文件，并修改配置。
 
 ```txt
+NODE_ENV=development
 PORT=3000
 SECRET=你的秘钥
 ```
