@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const {NotFound} = require('http-errors');
+const { NotFound } = require('http-errors');
 
 /**
  * 统计用户性别
@@ -14,9 +14,11 @@ const {NotFound} = require('http-errors');
  */
 router.get('/sex', async function (req, res) {
     try {
-        const male = await User.count({ where: { sex: 0 } });
-        const female = await User.count({ where: { sex: 1 } });
-        const unknown = await User.count({ where: { sex: 2 } });
+        const [male, female, unknown] = await Promise.all([
+            User.count({ where: { sex: 0 } }),
+            User.count({ where: { sex: 1 } }),
+            User.count({ where: { sex: 2 } })
+        ]);
 
         const data = [
             { value: male, name: '男性' },
@@ -25,13 +27,10 @@ router.get('/sex', async function (req, res) {
         ];
 
         success(res, '查询用户性别成功。', { data });
-
-        success(res, '查询用户性别成功。', {});
     } catch (error) {
         failure(res, error);
     }
 });
-
 
 /**
  * 统计每个月用户数量
