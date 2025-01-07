@@ -25,22 +25,17 @@ router.get('/', async function (req, res) {
 
         const condition = {
             ...getCondition(),
+            where: {},
             order: [['rank', 'ASC'], ['id', 'ASC']],
             limit: pageSize,
             offset: offset
         };
 
-        condition.where = {
-            courseId: {
-                [Op.eq]: query.courseId
-            }
-        };
+        condition.where.courseId = query.courseId;
 
         if (query.title) {
-            condition.where = {
-                title: {
-                    [Op.like]: `%${query.title}%`
-                }
+            condition.where.title = {
+                [Op.like]: `%${query.title}%`
             };
         }
 
