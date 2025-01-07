@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const {NotFoundError} = require('../../utils/errors');
+const {NotFound} = require('http-errors');
 
 /**
  * 统计用户性别

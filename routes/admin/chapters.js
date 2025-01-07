@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const { NotFoundError } = require('../../utils/errors');
+const { NotFound, BadRequest } = require('http-errors');
 
 /**
  * 查询章节列表
@@ -20,7 +20,7 @@ router.get('/', async function (req, res) {
         const offset = (currentPage - 1) * pageSize;
 
         if (!query.courseId) {
-            throw new Error('获取章节列表失败，课程ID不能为空。');
+            throw new BadRequest('获取章节列表失败，课程ID不能为空。');
         }
 
         const condition = {
@@ -143,7 +143,7 @@ async function getChapter(req) {
 
     const chapter = await Chapter.findByPk(id, condition);
     if (!chapter) {
-        throw new NotFoundError(`ID: ${id}的章节未找到。`)
+        throw new NotFound(`ID: ${id}的章节未找到。`)
     }
 
     return chapter;

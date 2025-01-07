@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const { NotFoundError } = require('../../utils/errors');
+const { NotFound } = require('http-errors');
 
 /**
  * 查询文章列表
@@ -113,7 +113,7 @@ async function getArticle(req) {
 
     const article = await Article.findByPk(id);
     if (!article) {
-        throw new NotFoundError(`ID: ${id}的文章未找到。`)
+        throw new NotFound(`ID: ${id}的文章未找到。`)
     }
 
     return article;

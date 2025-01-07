@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const { NotFoundError } = require('../../utils/errors');
+const { NotFound } = require('http-errors');
 
 /**
  * 查询用户列表
@@ -124,7 +124,7 @@ async function getUser(req) {
 
     const user = await User.findByPk(id);
     if (!user) {
-        throw new NotFoundError(`ID: ${id}的用户未找到。`)
+        throw new NotFound(`ID: ${id}的用户未找到。`)
     }
 
     return user;

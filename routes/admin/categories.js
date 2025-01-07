@@ -6,7 +6,7 @@ const {
     success,
     failure
 } = require('../../utils/responses');
-const { NotFoundError } = require('../../utils/errors');
+const { Conflict, NotFound } = require('http-errors')
 
 /**
  * 查询分类列表
@@ -90,7 +90,7 @@ router.delete('/:id', async function (req, res) {
 
         const count = await Course.count({ where: { categoryId: req.params.id } });
         if (count > 0) {
-            throw new Error('当前分类有课程，无法删除。');
+            throw new Conflict('当前分类有课程，无法删除。');
         }
 
         await category.destroy();
@@ -108,7 +108,7 @@ async function getCategory(req) {
 
     const category = await Category.findByPk(id);
     if (!category) {
-        throw new NotFoundError(`ID: ${id}的分类未找到。`)
+        throw new NotFound(`ID: ${id}的分类未找到。`)
     }
 
     return category;
