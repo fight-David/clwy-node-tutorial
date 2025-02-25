@@ -7,6 +7,7 @@ const {
     failure
 } = require('../../utils/responses');
 const { NotFound } = require('http-errors');
+const { getKeysByPattern, delKey, getKey, setKey } = require('../../utils/redis');
 
 /**
  * 查询文章列表
@@ -56,16 +57,27 @@ router.get('/', async function (req, res) {
 
 /**
  * 查询文章详情
- * GET /admin/articles/:id
+ * GET /articles/:id
  */
 router.get('/:id', async function (req, res) {
     try {
-        const article = await getArticle(req);
+        const { id } = req.params;
+
+        let article = await getKey(`article:${id}`);
+        if (!article) {
+            article = await Article.findByPk(id);
+            if (!article) {
+                throw new NotFound(`ID: ${id}的文章未找到。`)
+            }
+            await setKey(`article:${id}`, article)
+        }
+
         success(res, '查询文章成功。', { article });
     } catch (error) {
         failure(res, error);
     }
 });
+
 
 /**
  * 创建文章
@@ -76,6 +88,7 @@ router.post('/', async function (req, res) {
         const body = filterBody(req);
 
         const article = await Article.create(body);
+        await clearCache()
         success(res, '创建文章成功。', { article }, 201);
     } catch (error) {
         failure(res, error);
@@ -92,6 +105,7 @@ router.put('/:id', async function (req, res) {
         const body = filterBody(req);
 
         await article.update(body);
+        await clearCache(article.id)
         success(res, '更新文章成功。', { article });
     } catch (error) {
         failure(res, error);
@@ -105,8 +119,9 @@ router.put('/:id', async function (req, res) {
 router.post('/delete', async function (req, res) {
     try {
         const { id } = req.body;
-
+        // 支持批量删除
         await Article.destroy({ where: { id: id } });
+        await clearCache(id)
         success(res, '已删除到回收站。');
     } catch (error) {
         failure(res, error);
@@ -122,6 +137,7 @@ router.post('/restore', async function (req, res) {
         const { id } = req.body;
 
         await Article.restore({ where: { id: id } });
+        await clearCache(id)
         success(res, '已恢复成功。')
     } catch (error) {
         failure(res, error);
@@ -145,7 +161,6 @@ router.post('/force_delete', async function (req, res,) {
         failure(res, error);
     }
 });
-
 
 /**
  * 公共方法：查询当前文章
@@ -172,5 +187,26 @@ function filterBody(req) {
         content: req.body.content
     };
 }
+
+/**
+ * 清除缓存
+ * @param id
+ * @returns {Promise<void>}
+ */
+async function clearCache(id = null) {
+    // 清除所有文章列表缓存
+    let keys = await getKeysByPattern('articles:*');
+    if (keys.length !== 0) {
+        await delKey(keys);
+    }
+
+    // 如果传递了id，则通过id清除文章详情缓存
+    if (id) {
+        // 如果是数组，则遍历
+        const keys = Array.isArray(id) ? id.map(item => `article:${item}`) : `article:${id}`;
+        await delKey(keys);
+    }
+}
+
 
 module.exports = router;

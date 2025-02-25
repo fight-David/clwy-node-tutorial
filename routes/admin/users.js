@@ -7,6 +7,7 @@ const {
     failure
 } = require('../../utils/responses');
 const { NotFound } = require('http-errors');
+const { delKey } = require('../../utils/redis');
 
 /**
  * 查询用户列表
@@ -109,6 +110,7 @@ router.put('/:id', async function (req, res) {
         const body = filterBody(req);
 
         await user.update(body);
+        await clearCache(user)
         success(res, '更新用户成功。', { user });
     } catch (error) {
         failure(res, error);
@@ -147,6 +149,11 @@ function filterBody(req) {
         role: req.body.role,
         avatar: req.body.avatar
     };
+}
+
+
+async function clearCache(user) {
+    await delKey(`user:${user.id}`);
 }
 
 

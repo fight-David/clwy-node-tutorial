@@ -6,6 +6,8 @@ const {
     failure
 } = require('../../utils/responses');
 const {NotFound} = require('http-errors');
+const { delKey, flushAll } = require('../../utils/redis');
+
 
 /**
  * 查询系统设置详情
@@ -30,6 +32,9 @@ router.put('/', async function (req, res) {
         const body = filterBody(req);
 
         await setting.update(body);
+
+        // 删除缓存
+        await delKey('setting');
         success(res, '更新系统设置成功。', { setting });
     } catch (error) {
         failure(res, error);
@@ -60,5 +65,18 @@ function filterBody(req) {
         copyright: req.body.copyright
     };
 }
+
+/**
+ * 清除所有缓存
+ */
+router.get('/flush-all', async function (req, res) {
+  try {
+    await flushAll();
+    success(res, '清除所有缓存成功。');
+  } catch (error) {
+    failure(res, error);
+  }
+});
+
 
 module.exports = router;
